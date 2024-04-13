@@ -1,13 +1,23 @@
 package com.cardio_generator.generators;
 
 import java.util.Random;
-
 import com.cardio_generator.outputs.OutputStrategy;
+
+/**
+ * Generates blood saturation levels for patients
+ * 
+ * @author Jack
+ */
 
 public class BloodSaturationDataGenerator implements PatientDataGenerator {
     private static final Random random = new Random();
     private int[] lastSaturationValues;
 
+    
+    /**
+     * Constructs the blood saturation generator for a given number of patients
+     * @param patientCount Number of patients for which the data should be generated    
+     */
     public BloodSaturationDataGenerator(int patientCount) {
         lastSaturationValues = new int[patientCount + 1];
 

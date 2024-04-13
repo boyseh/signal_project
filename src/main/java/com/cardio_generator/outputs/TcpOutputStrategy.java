@@ -6,11 +6,24 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executors;
 
+/**
+ * Class which is used for sending patient data via sockets
+ * Patient data is formatted as a string containing the patient ID, timestamp, label, and data
+ * 
+ * @author Jack
+ */
+
 public class TcpOutputStrategy implements OutputStrategy {
 
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private PrintWriter out;
+    
+    /**
+     * Constructs the TCP output strategy with a given port
+     * 
+     * @param port the port on which the TCP server will listen for connections
+     */
 
     public TcpOutputStrategy(int port) {
         try {
