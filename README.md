@@ -67,3 +67,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Project Members
 
 - Student ID : i6345075
+
+## UML 
+
+You can find the UML for this project and its documentation in the uml_models directory at the root of the project. You can find a pdf version and a png version which has a better quality of the uml.  Here is also the link to the directory: https://github.com/boyseh/signal_project/tree/master/uml_models
