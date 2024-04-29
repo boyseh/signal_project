@@ -70,4 +70,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## UML 
 
-You can find the UML for this project and its documentation in the uml_models directory at the root of the project. You can find a pdf version and a png version which has a better quality of the uml.  Here is also the link to the directory: https://github.com/boyseh/signal_project/tree/master/uml_models
+In the uml_models you can find diagrams for the generator and the CHMS program. I will provide links to their respective directories.
+
+cardio generator: https://github.com/boyseh/signal_project/tree/master/uml_models/cardio_generator
+CHMS : https://github.com/boyseh/signal_project/tree/master/uml_models/chms
+
