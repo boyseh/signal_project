@@ -44,4 +44,8 @@ public class BloodSaturationDataGenerator implements PatientDataGenerator {
             e.printStackTrace(); // This will print the stack trace to help identify where the error occurred.
         }
     }
+    
+    public int getLastSaturationValue(int patientId){
+        return lastSaturationValues[patientId];
+    }
 }

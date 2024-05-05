@@ -183,4 +183,10 @@ public class HealthDataSimulator {
     private static void scheduleTask(Runnable task, long period, TimeUnit timeUnit) {
         scheduler.scheduleAtFixedRate(task, random.nextInt(5), period, timeUnit);
     }
+    
+    
+       public void generateTriggeredAlert(int patientId, OutputStrategy outputStrategy) {
+        // Emit the triggered alert
+        outputStrategy.output(patientId, System.currentTimeMillis(), "Triggered Alert", "triggered");
+    }
 }

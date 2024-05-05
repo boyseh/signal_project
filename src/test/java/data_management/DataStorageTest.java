@@ -7,6 +7,7 @@ import com.data_management.DataStorage;
 import com.data_management.PatientRecord;
 
 import java.util.List;
+import static org.junit.Assert.assertEquals;
 
 class DataStorageTest {
 

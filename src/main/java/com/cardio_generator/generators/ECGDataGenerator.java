@@ -43,4 +43,8 @@ public class ECGDataGenerator implements PatientDataGenerator {
 
         return pWave + qrsComplex + tWave + random.nextDouble() * 0.05; // Add small noise
     }
+
+    public double getLastEcgValue(int patientId) {
+        return lastEcgValues[patientId];
+    }
 }

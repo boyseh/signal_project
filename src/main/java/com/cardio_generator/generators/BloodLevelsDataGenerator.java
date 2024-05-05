@@ -42,4 +42,6 @@ public class BloodLevelsDataGenerator implements PatientDataGenerator {
             e.printStackTrace(); // This will print the stack trace to help identify where the error occurred.
         }
     }
+    
+    
 }

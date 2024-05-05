@@ -43,4 +43,13 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
             e.printStackTrace(); // This will print the stack trace to help identify where the error occurred.
         }
     }
+       public int getLastSystolicValue(int patientId) {
+        return lastSystolicValues[patientId];
+    }
+    
+    // Method to retrieve the last diastolic blood pressure value for a patient
+    public int getLastDiastolicValue(int patientId) {
+        return lastDiastolicValues[patientId];
+    }
+    
 }
