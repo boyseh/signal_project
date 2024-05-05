@@ -15,6 +15,8 @@ public class Patient {
     public int systolicCount;
     public int diastolicCount;
 
+    private int previousSaturation;
+
     /**
      * Constructs a new Patient with a specified ID. Initializes an empty list
      * of patient records.
@@ -75,13 +77,16 @@ public class Patient {
         }
         return -1;
     }
+    private int previousSystolicBP;
 
     public int getPreviousSystolicBP() {
+
+        return previousSystolicBP;
 
     }
 
     public void setPreviousSystolicBP(int systolicBP) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        this.previousSystolicBP = systolicBP;
     }
 
     public int getDiastolicBloodPressure() {
@@ -94,13 +99,15 @@ public class Patient {
         }
         return -1;
     }
+    private int previousDiastolicBP;
 
     public int getPreviousDiastolicBP() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+
+        return previousDiastolicBP;
     }
 
     public void setPreviousDiastolicBP(int diastolicBP) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        this.previousDiastolicBP = diastolicBP;
     }
 
     public int getSystolicCount() {
@@ -131,19 +138,21 @@ public class Patient {
     }
 
     public int getPreviousSaturartion() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        return previousSaturation;
     }
 
     public void setPreviousSaturation(int saturation) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        this.previousSaturation = saturation;
     }
 
-    public int getPreviousSaturationTime() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private long previousSaturationTime;
+
+    public long getPreviousSaturationTime() {
+        return previousSaturationTime;
     }
 
     public void setPreviousSaturationTime(long currentTime) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        previousSaturationTime = currentTime;
     }
 
     public double getECGValue() {
@@ -157,12 +166,14 @@ public class Patient {
         return -1;
     }
 
-    public int getPreviousECGValue() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private double previousECGValue;
+
+    public double getPreviousECGValue() {
+        return previousECGValue;
     }
 
     public void setPreviousECGValue(double ecgValue) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        this.previousECGValue = ecgValue;
     }
 
     public String getPatientId() {

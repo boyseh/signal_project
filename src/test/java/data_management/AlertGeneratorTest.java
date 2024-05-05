@@ -3,116 +3,225 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package data_management;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
-import com.cardio_generator.generators.AlertGenerator;
-import com.cardio_generator.generators.BloodPressureDataGenerator;
-import com.cardio_generator.generators.BloodSaturationDataGenerator;
-import com.cardio_generator.outputs.OutputStrategy;
-import org.junit.Before;
-import org.junit.Test;
+import com.alerts.Alert;
+import com.alerts.AlertGenerator;
+import com.cardio_generator.HealthDataSimulator;
+import com.data_management.DataStorage;
+import com.data_management.Patient;
+import java.util.List;
 
 public class AlertGeneratorTest {
-    private AlertGenerator alertGenerator;
-    private OutputStrategy outputStrategy;
 
-    @Before
-     public void setUp() {
-        // Create mock generator classes for blood pressure and saturation data
-        BloodPressureDataGenerator bloodPressureGenerator = mock(BloodPressureDataGenerator.class);
-        BloodSaturationDataGenerator bloodSaturationGenerator = mock(BloodSaturationDataGenerator.class);
+    @Test
+    void testTrendAlertIncreasingSystolic() {
+        Patient patient = new Patient(1);
+        patient.setPreviousSystolicBP(120);
+        patient.setPreviousDiastolicBP(80);
 
-        // Configure mock behavior to return specific values for consecutive readings
-        // For simplicity, let's assume a difference of 10 mmHg for blood pressure and 5% for saturation
-        when(bloodPressureGenerator.getLastSystolicValue(1)).thenReturn(120, 130, 140); // Difference of 10 mmHg
-        when(bloodPressureGenerator.getLastDiastolicValue(1)).thenReturn(80, 90, 100); // Difference of 10 mmHg
-        when(bloodSaturationGenerator.getLastSaturationValue(1)).thenReturn(95, 90, 85); // Difference of -5%
+        DataStorage ds = new DataStorage();
+        AlertGenerator alertGenerator = new AlertGenerator(ds);
 
-        // Create AlertGenerator instance with mock generators
-        alertGenerator = new AlertGenerator(1, bloodPressureGenerator, bloodSaturationGenerator);
+        patient.addRecord(130, "SystolicPressure", System.currentTimeMillis());
+        patient.addRecord(140, "SystolicPressure", System.currentTimeMillis());
+        patient.addRecord(150, "SystolicPressure", System.currentTimeMillis());
 
-        outputStrategy = mock(OutputStrategy.class); // Mock OutputStrategy
+        alertGenerator.evaluateData(patient);
+
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+
+        assertEquals(1, alerts.size());
+        assertEquals("Trend Alert", alerts.get(0).getCondition());
     }
 
     @Test
-    public void testIncreasingTrendAlert() {
-        // Simulate three consecutive increasing blood pressure readings
-        alertGenerator.generate(1, outputStrategy); // Generate first reading
-        alertGenerator.generate(1, outputStrategy); // Generate second reading
-        alertGenerator.generate(1, outputStrategy); // Generate third reading
+    void testTrendAlertDecreasingSystolic() {
+        Patient patient = new Patient(1);
+        patient.setPreviousSystolicBP(150);
 
-        // Verify that the Trend Alert is triggered
-        verify(outputStrategy).output(1, System.currentTimeMillis(), "Trend Alert", "triggered");
+        AlertGenerator alertGenerator = new AlertGenerator(new DataStorage());
+
+        patient.addRecord(140, "SystolicPressure", System.currentTimeMillis());
+        patient.addRecord(130, "SystolicPressure", System.currentTimeMillis());
+        patient.addRecord(120, "SystolicPressure", System.currentTimeMillis());
+
+        alertGenerator.evaluateData(patient);
+
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+
+        assertEquals(1, alerts.size());
+        assertEquals("Trend Alert", alerts.get(0).getCondition());
     }
 
     @Test
-    public void testDecreasingTrendAlert() {
-        // Simulate three consecutive decreasing blood pressure readings
-        // You need to adjust the generated values based on your data range
-        // For simplicity, we'll just decrement the values by more than 10 mmHg each
-        alertGenerator.generate(1, outputStrategy); // Generate first reading
-        alertGenerator.generate(1, outputStrategy); // Generate second reading
-        alertGenerator.generate(1, outputStrategy); // Generate third reading
+    void testTrendAlertIncreasingDiastolic() {
+        Patient patient = new Patient(1);
+        patient.setPreviousSystolicBP(120);
 
-        // Verify that the Trend Alert is triggered
-        verify(outputStrategy).output(1, System.currentTimeMillis(), "Trend Alert", "triggered");
+        DataStorage ds = new DataStorage();
+        AlertGenerator alertGenerator = new AlertGenerator(ds);
+
+        patient.addRecord(130, "DiastolicPressure", System.currentTimeMillis());
+        patient.addRecord(140, "DiastolicPressure", System.currentTimeMillis());
+        patient.addRecord(150, "DiastolicPressure", System.currentTimeMillis());
+
+        alertGenerator.evaluateData(patient);
+
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+
+        assertEquals(1, alerts.size());
+        assertEquals("Trend Alert", alerts.get(0).getCondition());
     }
 
     @Test
-    public void testCriticalThresholdsAlert() {
-        // Simulate critical systolic and diastolic blood pressure readings
-        // You need to adjust the values based on your critical thresholds
-        alertGenerator.generate(1, outputStrategy); // Generate critical reading
+    void testTrendAlertDecreasingDiastolic() {
+        Patient patient = new Patient(1);
+        patient.setPreviousDiastolicBP(150);
 
-        // Verify that the Critical Threshold Alert is triggered
-        verify(outputStrategy).output(1, System.currentTimeMillis(), "Critical Threshold Alert", "triggered");
+        AlertGenerator alertGenerator = new AlertGenerator(new DataStorage());
+
+        patient.addRecord(140, "DiastolicPressure", System.currentTimeMillis());
+        patient.addRecord(130, "DiatolicPressure", System.currentTimeMillis());
+        patient.addRecord(120, "DiastolicPressure", System.currentTimeMillis());
+
+        alertGenerator.evaluateData(patient);
+
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+
+        assertEquals(1, alerts.size());
+        assertEquals("Trend Alert", alerts.get(0).getCondition());
+    }
+
+    @Test
+    void testCriticalThresholdAlert() {
+        Patient patient = new Patient(1);
+        AlertGenerator alertGenerator = new AlertGenerator(new DataStorage());
+
+        // High systolic BP
+        patient.addRecord(190, "SystolicPressure", System.currentTimeMillis());
+        alertGenerator.evaluateData(patient);
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(1, alerts.size());
+        assertEquals("Critical Threshold Alert", alerts.get(0).getCondition());
+
+        // Low systolic BP
+        patient.addRecord(80, "SystolicPressure", System.currentTimeMillis());
+        alertGenerator.evaluateData(patient);
+        alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(2, alerts.size());
+        assertEquals("Critical Threshold Alert", alerts.get(1).getCondition());
+
+        // High diastolic BP
+        patient.addRecord(120, "DiastolicPressure", System.currentTimeMillis());
+        alertGenerator.evaluateData(patient);
+        alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(3, alerts.size());
+        assertEquals("Critical Threshold Alert", alerts.get(2).getCondition());
+
+        // Low diastolic BP
+        patient.addRecord(50, "DiastolicPressure", System.currentTimeMillis());
+        alertGenerator.evaluateData(patient);
+        alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(4, alerts.size());
+        assertEquals("Critical Threshold Alert", alerts.get(3).getCondition());
+    }
+
+    @Test
+    void testLowSaturation() {
+        Patient patient = new Patient(1);
+        AlertGenerator alertGenerator = new AlertGenerator(new DataStorage());
+        // Add a record with saturation below 92%
+        patient.addRecord(85, "Saturation", System.currentTimeMillis());
+
+        // Evaluate the data
+        alertGenerator.evaluateData(patient);
+
+        // Assert that a low saturation alert is triggered
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(1, alerts.size());
+        assertEquals("Low Saturation Alert", alerts.get(0).getCondition());
+    }
+
+    void testRapidDropAlert() {
+        Patient patient = new Patient(1);
+
+        DataStorage ds = new DataStorage();
+        AlertGenerator alertGenerator = new AlertGenerator(ds);
+
+        // Add records with a drop of 5% or more within a 10-minute interval
+        long currentTime = System.currentTimeMillis();
+        long tenMinutesAgo = currentTime - (10 * 60 * 1000); // 10 minutes ago
+
+        // Initial saturation level
+        patient.addRecord(90, "Saturation", tenMinutesAgo);
+
+        // Rapid drop of 5% or more within 10 minutes
+        patient.addRecord(83, "Saturation", currentTime);
+
+        // Evaluate the data
+        alertGenerator.evaluateData(patient);
+
+        // Assert that a rapid drop alert is triggered
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(1, alerts.size());
+        assertEquals("Rapid Drop Alert", alerts.get(0).getCondition());
+    }
+
+    @Test
+    void testHypotensiveHypoxemiaAlert() {
+        Patient patient = new Patient(1);
+
+        DataStorage ds = new DataStorage();
+        AlertGenerator alertGenerator = new AlertGenerator(ds);
+
+        // Add records with systolic BP below 90 mmHg and saturation below 92%
+        patient.addRecord(80, "SystolicPressure", System.currentTimeMillis());
+        patient.addRecord(85, "Saturation", System.currentTimeMillis());
+
+        // Evaluate the data
+        alertGenerator.evaluateData(patient);
+
+        // Assert that a hypotensive hypoxemia alert is triggered
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(1, alerts.size());
+        assertEquals("Hypotensive Hypoxemia Alert", alerts.get(0).getType());
+    }
+
+    @Test
+    void testAbnormalHeartRateAlert() {
+        Patient patient = new Patient(1);
+
+        DataStorage ds = new DataStorage();
+        AlertGenerator alertGenerator = new AlertGenerator(ds);
+
+        patient.addRecord(45, "HeartRate", System.currentTimeMillis());
+        patient.addRecord(105, "HeartRate", System.currentTimeMillis());
+
+        alertGenerator.evaluateData(patient);
+
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(2, alerts.size());
+        assertEquals("Abnormal Heart Rate Alert", alerts.get(0).getCondition());
+    }
+
+    @Test
+    void testIrregularBeatAlert() {
+        Patient patient = new Patient(1);
+
+        DataStorage ds = new DataStorage();
+        AlertGenerator alertGenerator = new AlertGenerator(ds);
+
+        // Add records with significant variations in time intervals between consecutive beats
+        patient.addRecord(0.8, "ECG", System.currentTimeMillis());
+        patient.addRecord(0.7, "ECG", System.currentTimeMillis());
+
+        // Evaluate the data
+        alertGenerator.evaluateData(patient);
+
+        // Assert that an irregular beat alert is triggered
+        List<Alert> alerts = alertGenerator.getTriggeredAlerts();
+        assertEquals(1, alerts.size());
+        assertEquals("Irregular Heart Beat Alert", alerts.get(0).getCondition());
     }
     
-    @Test
-    public void testLowSaturationAlert() {
-        // Simulate low saturation reading
-        // You need to adjust the value based on your threshold
-        // For simplicity, let's simulate a saturation value below 92%
-        // Ensure your generator returns a value below 92% for this test
-        alertGenerator.generate(1, outputStrategy); // Generate low saturation reading
-
-        // Verify that the Low Saturation Alert is triggered
-        verify(outputStrategy).output(1, System.currentTimeMillis(), "Low Saturation Alert", "triggered");
-    }
-
-    @Test
-    public void testRapidDropAlert() {
-        // Simulate rapid drop in saturation
-        // You need to adjust the values based on your criteria
-        // For simplicity, let's simulate a drop of 5% or more within 10 minutes
-        // Ensure your generator returns appropriate values for this test
-        alertGenerator.generate(1, outputStrategy); // Generate rapid drop in saturation
-
-        // Verify that the Rapid Drop Alert is triggered
-        verify(outputStrategy).output(1, System.currentTimeMillis(), "Rapid Drop Alert", "triggered");
-    }
-    
-    public void testAbnormalHeartRateAlert() {
-        // Generate ECG data with heart rate below 50 bpm
-        alertGenerator.generate(1, outputStrategy); // Heart rate below 50 bpm
-        // Verify that the Abnormal Heart Rate Alert is triggered
-        verify(outputStrategy).output(1, System.currentTimeMillis(), "Abnormal Heart Rate Alert", "triggered");
-
-        // Generate ECG data with heart rate above 100 bpm
-        alertGenerator.generate(1, outputStrategy); // Heart rate above 100 bpm
-        // Verify that the Abnormal Heart Rate Alert is triggered
-        verify(outputStrategy).output(1, System.currentTimeMillis(), "Abnormal Heart Rate Alert", "triggered");
-    }
-
-    @Test
-    public void testIrregularBeatPatternsAlert() {
-        // Generate ECG data with irregular beat patterns
-        // For simplicity, let's assume an irregular beat if the ECG value deviates significantly from the previous value
-        alertGenerator.generate(1, outputStrategy); // Generate first reading
-        alertGenerator.generate(1, outputStrategy); // Generate second reading
-        // Verify that the Irregular Beat Patterns Alert is triggered
-        verify(outputStrategy).output(1, System.currentTimeMillis(), "Irregular Beat Patterns Alert", "triggered");
-    }
 }
-

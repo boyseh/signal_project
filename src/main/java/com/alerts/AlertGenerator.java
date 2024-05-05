@@ -3,6 +3,8 @@ package com.alerts;
 import com.cardio_generator.outputs.OutputStrategy;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The {@code AlertGenerator} class is responsible for monitoring patient data
@@ -13,6 +15,7 @@ import com.data_management.Patient;
 public class AlertGenerator {
 
     private DataStorage dataStorage;
+    private List<Alert> triggeredAlerts;
 
     /**
      * Constructs an {@code AlertGenerator} with a specified
@@ -24,6 +27,7 @@ public class AlertGenerator {
      */
     public AlertGenerator(DataStorage dataStorage) {
         this.dataStorage = dataStorage;
+         this.triggeredAlerts = new ArrayList<>();
     }
 
     /**
@@ -43,7 +47,7 @@ public class AlertGenerator {
 
         int saturation = patient.getOxygenSaturation();
         int previousSaturation = patient.getPreviousSaturartion();
-        int previousSaturationTime = patient.getPreviousSaturationTime();
+        long previousSaturationTime = patient.getPreviousSaturationTime();
 
         double ecgValue = patient.getECGValue();
         double previousECGValue = patient.getPreviousECGValue();
@@ -100,7 +104,12 @@ public class AlertGenerator {
         // Implementation might involve logging the alert or notifying staff
         System.out.println("Alert logged: " + alert.toString());
         System.out.println("Alert notification sent to medical staff: " + alert.toString());
+        triggeredAlerts.add(alert);
 
+    }
+    
+      public List<Alert> getTriggeredAlerts() {
+        return triggeredAlerts;
     }
 
     private boolean generateTrendAlert(Patient patient, int systolicBP, int previousSystolicBP, int diastolicBP, int previousDiastolicBP) {
