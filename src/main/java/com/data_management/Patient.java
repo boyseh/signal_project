@@ -1,6 +1,7 @@
 package com.data_management;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -12,10 +13,7 @@ public class Patient {
 
     private int patientId;
     private List<PatientRecord> patientRecords;
-    public int systolicCount;
-    public int diastolicCount;
-
-    private int previousSaturation;
+  
 
     /**
      * Constructs a new Patient with a specified ID. Initializes an empty list
@@ -26,8 +24,7 @@ public class Patient {
     public Patient(int patientId) {
         this.patientId = patientId;
         this.patientRecords = new ArrayList<>();
-        this.systolicCount = 0;
-        this.diastolicCount = 0;
+       
     }
 
     /**
@@ -57,127 +54,20 @@ public class Patient {
      * @return a list of PatientRecord objects that fall within the specified
      * time range
      */
-    public List<PatientRecord> getRecords(long startTime, long endTime) {
-        List<PatientRecord> filteredRecords = new ArrayList<>();
-        for (PatientRecord record : patientRecords) {
-            if (record.getTimestamp() >= startTime && record.getTimestamp() <= endTime) {
-                filteredRecords.add(record);
-            }
+ public List<PatientRecord> getRecords(long startTime, long endTime) {
+    List<PatientRecord> filteredRecords = new ArrayList<>();
+    for (PatientRecord record : patientRecords) {
+        if (record.getTimestamp() >= startTime && record.getTimestamp() <= endTime) {
+            filteredRecords.add(record);
         }
-        return filteredRecords;
     }
-
-    public int getSystolicBloodPressure() {
-        List<PatientRecord> records = getRecords(System.currentTimeMillis(), System.currentTimeMillis() + 100);
-        for (PatientRecord record : records) {
-            if (record.getRecordType().equals("SystolicPressure")) {
-                return (int) record.getMeasurementValue();
-            }
-
-        }
-        return -1;
+    filteredRecords.sort(Comparator.comparingLong(PatientRecord::getTimestamp));
+    return filteredRecords;
+}
+  
+    
+    public int getPatientID(){
+        return patientId;
     }
-    private int previousSystolicBP;
-
-    public int getPreviousSystolicBP() {
-
-        return previousSystolicBP;
-
-    }
-
-    public void setPreviousSystolicBP(int systolicBP) {
-        this.previousSystolicBP = systolicBP;
-    }
-
-    public int getDiastolicBloodPressure() {
-        List<PatientRecord> records = getRecords(System.currentTimeMillis(), System.currentTimeMillis() + 100);
-        for (PatientRecord record : records) {
-            if (record.getRecordType().equals("DiastolicPressure")) {
-                return (int) record.getMeasurementValue();
-            }
-
-        }
-        return -1;
-    }
-    private int previousDiastolicBP;
-
-    public int getPreviousDiastolicBP() {
-
-        return previousDiastolicBP;
-    }
-
-    public void setPreviousDiastolicBP(int diastolicBP) {
-        this.previousDiastolicBP = diastolicBP;
-    }
-
-    public int getSystolicCount() {
-        return systolicCount;
-    }
-
-    public int getDiastolicCount() {
-        return diastolicCount;
-    }
-
-    public void setSystolicCount(int count) {
-        systolicCount = count;
-    }
-
-    public void setDiastolicCount(int count) {
-        diastolicCount = count;
-    }
-
-    public int getOxygenSaturation() {
-        List<PatientRecord> records = getRecords(System.currentTimeMillis(), System.currentTimeMillis() + 100);
-        for (PatientRecord record : records) {
-            if (record.getRecordType().equals("Saturation")) {
-                return (int) record.getMeasurementValue();
-            }
-
-        }
-        return -1;
-    }
-
-    public int getPreviousSaturartion() {
-        return previousSaturation;
-    }
-
-    public void setPreviousSaturation(int saturation) {
-        this.previousSaturation = saturation;
-    }
-
-    private long previousSaturationTime;
-
-    public long getPreviousSaturationTime() {
-        return previousSaturationTime;
-    }
-
-    public void setPreviousSaturationTime(long currentTime) {
-        previousSaturationTime = currentTime;
-    }
-
-    public double getECGValue() {
-        List<PatientRecord> records = getRecords(System.currentTimeMillis(), System.currentTimeMillis() + 100);
-        for (PatientRecord record : records) {
-            if (record.getRecordType().equals("ECG")) {
-                return (int) record.getMeasurementValue();
-            }
-
-        }
-        return -1;
-    }
-
-    private double previousECGValue;
-
-    public double getPreviousECGValue() {
-        return previousECGValue;
-    }
-
-    public void setPreviousECGValue(double ecgValue) {
-        this.previousECGValue = ecgValue;
-    }
-
-    public String getPatientId() {
-        return patientId + "";
-    }
-
+    
 }

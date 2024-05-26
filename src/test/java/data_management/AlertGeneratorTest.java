@@ -6,18 +6,127 @@ package data_management;
 
 import com.alerts.Alert;
 import com.alerts.AlertGenerator;
-import com.cardio_generator.HealthDataSimulator;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
+import com.data_management.PatientRecord;
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class AlertGeneratorTest {
 
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import static org.mockito.Mockito.when;
+
+public class AlertGeneratorTest {
+    
+    private AlertGenerator alertGenerator;
+    private DataStorage mockDataStorage;
+    private ByteArrayOutputStream outContent;
+    private PrintStream originalOut;
+    private long currentTime;
+
+    @BeforeEach
+    void setUp() {
+        mockDataStorage = Mockito.mock(DataStorage.class);
+        alertGenerator = new AlertGenerator(mockDataStorage);
+        outContent = new ByteArrayOutputStream();
+        originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+        currentTime = System.currentTimeMillis();
+    }
+
+    @AfterEach
+    void restoreStreams() {
+        System.setOut(originalOut);
+    }
+    
+   
+     @Test
+    void testEvaluateSystolicPressureCriticalAlert() {
+        Patient patient = new Patient(1);
+        List<PatientRecord> systolicRecord = Arrays.asList(
+            new PatientRecord(1, 200, "SystolicPressure", currentTime)  
+        );
+
+        Mockito.when(mockDataStorage.getRecords(Mockito.anyInt(), Mockito.anyLong(), Mockito.anyLong()))
+            .thenReturn(systolicRecord);
+
+        alertGenerator.evaluateData(patient);
+
+        String output = outContent.toString();
+        assertTrue(output.contains("Systolic Blood Pressure has exceeded 180 mmHg"), 
+            "Expected 'Critical Pressure Threshold Alert' for high systolic pressure but got: " + output);
+    }
+    
+    
+      @Test
+    void testTrendAlertIncreasing(){
+        
+        //Create mock patient
+        Patient mockPatient = Mockito.mock(Patient.class);
+        when(mockPatient.getPatientID()).thenReturn(1);
+        long currentTime = System.currentTimeMillis();
+        
+        //Create increasing test data 
+     
+           List<PatientRecord> records = Arrays.asList(
+            new PatientRecord(1, 100, "SystolicPressure", currentTime-10),
+            new PatientRecord(1, 111, "SystolicPressure", currentTime-5),
+            new PatientRecord(1, 122, "SystolicPressure", currentTime)
+        );
+           
+            Mockito.when(mockDataStorage.getRecords(Mockito.anyInt(), Mockito.anyLong(), Mockito.anyLong()))
+            .thenReturn(records);
+
+        
+        alertGenerator.evaluateData(mockPatient);
+        
+        String output = outContent.toString();
+        
+        assertTrue(output.contains("Systolic Blood Pressure Increasing Trend Alert"), 
+            "Expected 'Systolic Blood Pressure Increasing Trend Alert' for trend check but got: " + output);
+      
+    }
+        
+    
+      @Test
+    void testEvaluateBloodPressureIncreasingTrends() {
+        Patient patient = new Patient(1);
+        List<PatientRecord> records = Arrays.asList(
+            new PatientRecord(1, 100, "SystolicPressure", currentTime-10),
+            new PatientRecord(1, 111, "SystolicPressure", currentTime-5),
+            new PatientRecord(1, 122, "SystolicPressure", currentTime)
+        );
+
+        Mockito.when(mockDataStorage.getRecords(Mockito.anyInt(), Mockito.anyLong(), Mockito.anyLong()))
+            .thenReturn(records);
+
+        alertGenerator.evaluateData(patient);
+
+        assertTrue(outContent.toString().contains("Systolic Blood Pressure Increasing Trend Alert"));
+    }
+
+    
+        
+
+    
+    
+    
+
+/*
+   
     @Test
     void testTrendAlertIncreasingSystolic() {
         Patient patient = new Patient(1);
-        patient.setPreviousSystolicBP(120);
-        patient.setPreviousDiastolicBP(80);
+        
 
         DataStorage ds = new DataStorage();
         AlertGenerator alertGenerator = new AlertGenerator(ds);
@@ -223,5 +332,5 @@ public class AlertGeneratorTest {
         assertEquals(1, alerts.size());
         assertEquals("Irregular Heart Beat Alert", alerts.get(0).getCondition());
     }
-    
+    */
 }
