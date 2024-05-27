@@ -20,8 +20,7 @@ public class AlertGenerator {
     private DataStorage dataStorage;
     private static final long TIME_WINDOW_MS = 100000;// 100 seconds, configurable
     private static final long HOUR_INTERVAL_MS = 3600000;
-    private static final long DAY_INTERVAL_MS = 86400000;
-    
+    public static final long DAY_INTERVAL_MS = 86400000;
 
     /**
      * Constructs an {@code AlertGenerator} with a specified
@@ -66,7 +65,7 @@ public class AlertGenerator {
      * @param alert the alert object containing details about the alert
      * condition
      */
-    private void triggerAlert(Alert alert) {
+    public void triggerAlert(Alert alert) {
         // Implementation might involve logging the alert or notifying staff
         System.out.println("Patient ID: " + alert.getPatientId()
                 + ", Condition: " + alert.getCondition()
@@ -75,8 +74,9 @@ public class AlertGenerator {
     }
 
     /**
-     * Makes all the blood pressure evaluations to check if any alerts need to be triggered.
-     * Checks for increasing or decreasing trend and if a threshold has been exceeded.
+     * Makes all the blood pressure evaluations to check if any alerts need to
+     * be triggered. Checks for increasing or decreasing trend and if a
+     * threshold has been exceeded.
      *
      * @param patient to be evaluated
      */
@@ -110,28 +110,29 @@ public class AlertGenerator {
 
     private void trendCheck(List<PatientRecord> records, Patient patient, String type) {
         if (records.size() >= 3) {
-            boolean increasing = true;
-            boolean decreasing = true;
+            boolean decreasingTrend = true;
+            boolean increasingTrend = true;
 
             for (int i = 0; i < records.size() - 1; i++) {
                 double currentValue = records.get(i).getMeasurementValue();
                 double nextValue = records.get(i + 1).getMeasurementValue();
 
                 if (currentValue - nextValue <= 10) {
-                    increasing = false;
+                    decreasingTrend = false;
                 }
                 if (nextValue - currentValue <= 10) {
-                    decreasing = false;
+                    increasingTrend = false;
                 }
             }
 
             String patientID = Integer.toString(patient.getPatientID());
-            if (increasing) {
-                Alert alert = new Alert(patientID, type + " Increasing Trend Alert", records.get(records.size() - 1).getTimestamp());
+            if (decreasingTrend == true) {
+                Alert alert = new Alert(patientID, type + " Decreasing Trend Alert", records.get(records.size() - 1).getTimestamp());
                 triggerAlert(alert);
             }
-            if (decreasing) {
-                triggerAlert(new Alert(patientID, type + " Decreasing Trend Alert", records.get(records.size() - 1).getTimestamp()));
+            if (increasingTrend == true) {
+                Alert alert = new Alert(patientID, type + " Increasing Trend Alert", records.get(records.size() - 1).getTimestamp());
+                triggerAlert(alert);
             }
         }
     }
@@ -141,12 +142,12 @@ public class AlertGenerator {
         for (PatientRecord record : records) {
 
             if (record.getMeasurementValue() > upperThreshold) {
-                Alert alert = new Alert(String.valueOf(patient.getPatientID()), type + " has exceeded " + upperThreshold + " mmHg", record.getTimestamp());
+                Alert alert = new Alert(String.valueOf(patient.getPatientID()), type + " Critical High Alert: " + type + " has exceeded " + upperThreshold + " mmHg", record.getTimestamp());
                 triggerAlert(alert);
             }
 
             if (record.getMeasurementValue() < lowerTreshold) {
-                Alert alert = new Alert(String.valueOf(patient.getPatientID()), type + " has dropped below " + lowerTreshold + " mmHg", record.getTimestamp());
+                Alert alert = new Alert(String.valueOf(patient.getPatientID()), type + " Critical Low Alert: " + type + " has dropped below " + lowerTreshold + " mmHg", record.getTimestamp());
                 triggerAlert(alert);
             }
         }
@@ -154,8 +155,9 @@ public class AlertGenerator {
     }
 
     /**
-     * Evaluates the patients blood saturation records and determines if any alerts need to be triggered.
-     * Checks if there is a lower than usual blood saturation and if there was a rapid drop during a given interval.
+     * Evaluates the patients blood saturation records and determines if any
+     * alerts need to be triggered. Checks if there is a lower than usual blood
+     * saturation and if there was a rapid drop during a given interval.
      *
      * @param patient to be evaluated
      */
@@ -179,7 +181,7 @@ public class AlertGenerator {
     private void lowSaturationCheck(List<PatientRecord> records, Patient patient) {
         for (PatientRecord record : records) {
             if (record.getMeasurementValue() < 92) {
-                Alert alert = new Alert(String.valueOf(patient.getPatientID()), "Low Saturation Alert%", record.getTimestamp());
+                Alert alert = new Alert(String.valueOf(patient.getPatientID()), "Low Saturation Alert", record.getTimestamp());
                 triggerAlert(alert);
             }
         }
@@ -199,7 +201,8 @@ public class AlertGenerator {
     }
 
     /**
-     * Checks saturation and systolic blood pressure for a potential hypotensive hypoxemia alert.
+     * Checks saturation and systolic blood pressure for a potential hypotensive
+     * hypoxemia alert.
      *
      * @param patient
      */
@@ -255,40 +258,39 @@ public class AlertGenerator {
 
         List<PatientRecord> ECGRecords = getRecordsByType(records, "ECG");
 
-        abnormalHeartRateCheck(ECGRecords, patient);
+        checkIrregularHeartRate(ECGRecords, patient);
+        criticalHeartRateAlert(records, patient);
 
     }
 
-    private void abnormalHeartRateCheck(List<PatientRecord> records, Patient patient) {
+  private void checkIrregularHeartRate(List<PatientRecord> records,Patient patient) {
+    int windowSize = 5;
+    double thresholdMultiplier = 1.5;
 
+    if (records.size() >= windowSize) {
+        for (int i = windowSize - 1; i < records.size(); i++) {
+            double sum = 0.0;
+            for (int j = i - windowSize + 1; j <= i; j++) {
+                sum += records.get(j).getMeasurementValue();
+            }
+            double average = sum / windowSize;
+            double currentValue = records.get(i).getMeasurementValue();
+
+          
+            // Check for irregular heart rate using the sliding window
+            if (currentValue > average * thresholdMultiplier) {
+                triggerAlert(new Alert(Integer.toString(patient.getPatientID()), "Irregular Heart Rate Alert", records.get(i).getTimestamp()));
+            
+            }
+            
+        }
+    }
+  }
+    private void criticalHeartRateAlert(List<PatientRecord> records, Patient patient) {
         for (PatientRecord record : records) {
             if (record.getMeasurementValue() < 50 || record.getMeasurementValue() > 100) {
-                Alert alert = new Alert(String.valueOf(patient.getPatientID()), "Abnormal Heart Rate Alert", record.getTimestamp());
+                Alert alert = new Alert(String.valueOf(patient.getPatientID()), "Critical Heart Rate Alert", record.getTimestamp());
                 triggerAlert(alert);
-            }
-        }
-
-        if (records.size() >= 3) {
-            // Define the sliding window size
-            int windowSize = 5; 
-            double thresholdMultiplier = 1.5; // Define how much above the average is considered abnormal
-
-            // Iterate through the records, starting from the window size index
-            for (int i = windowSize - 1; i < records.size(); i++) {
-                double sum = 0.0;
-                for (int j = i - windowSize + 1; j <= i; j++) {
-                    sum += records.get(j).getMeasurementValue();
-                }
-
-                // Calculate the average for the current window
-                double average = sum / windowSize;
-                double currentValue = records.get(i).getMeasurementValue();
-
-                // Check if the current value exceeds the threshold
-                if (currentValue > average * thresholdMultiplier) {
-                    triggerAlert(new Alert(Integer.toString(patient.getPatientID()),"ECG Abnormal Data Alert",  records.get(i).getTimestamp()
-                    ));
-                }
             }
         }
     }

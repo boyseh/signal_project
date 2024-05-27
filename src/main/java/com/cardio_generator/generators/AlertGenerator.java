@@ -18,14 +18,7 @@ public class AlertGenerator implements PatientDataGenerator {
     public static final Random RANDOM_GENERATOR = new Random();
     //variable name --> lowerCamelCase
     private boolean[] alertStates; // false = resolved, true = pressed
-    private int[][] previousSystolicBPs;
-    private int[][] previousDiastolicBPs;
-    private int[] previousSaturation;
-    private long[] previousSaturationTime;
-
-    private BloodPressureDataGenerator bloodPressureGenerator;
-    private BloodSaturationDataGenerator bloodSaturationGenerator;
-    private ECGDataGenerator ecgDataGenerator;
+   
 
     /**
      * Constructs the alert generator. Initializes the alert states for each of
@@ -34,16 +27,8 @@ public class AlertGenerator implements PatientDataGenerator {
      * @param patientCount
      */
     public AlertGenerator(int patientCount) {
-        alertStates = new boolean[patientCount + 1];
-        previousSystolicBPs = new int[patientCount + 1][2];
-        previousDiastolicBPs = new int[patientCount + 1][2];
-        previousSaturation = new int[patientCount + 1];
-        previousSaturationTime = new long[patientCount + 1];
-
-        bloodPressureGenerator = new BloodPressureDataGenerator(patientCount);
-        bloodSaturationGenerator = new BloodSaturationDataGenerator(patientCount);
-        ecgDataGenerator = new ECGDataGenerator(patientCount);
-
+       
+alertStates = new boolean[patientCount+1];
     }
 
     /**
@@ -81,120 +66,5 @@ public class AlertGenerator implements PatientDataGenerator {
             e.printStackTrace();
         }
     }
-
-    /*
-    private void generateTrendAlert(int patientId, OutputStrategy outputStrategy) {
-
-        int systolicBP = bloodPressureGenerator.getLastSystolicValue(patientId);
-        int diastolicBP = bloodPressureGenerator.getLastDiastolicValue(patientId);
-
-        if (Math.abs(previousSystolicBPs[patientId][0] - systolicBP) > 10) {
-            previousSystolicBPs[patientId][1]++;
-
-            if (previousSystolicBPs[patientId][1] >= 3) {
-                alertStates[patientId] = true;
-                outputStrategy.output(patientId, System.currentTimeMillis(), "Trend Alert", "triggered");
-                previousSystolicBPs[patientId][1] = 0;
-            }
-        } else {
-            previousSystolicBPs[patientId][1] = 0;
-        }
-
-        if (Math.abs(previousDiastolicBPs[patientId][0] - diastolicBP) > 10) {
-            previousDiastolicBPs[patientId][1]++;
-
-            if (previousDiastolicBPs[patientId][1] >= 3) {
-                alertStates[patientId] = true;
-                outputStrategy.output(patientId, System.currentTimeMillis(), "Trend Alert", "triggered");
-                previousDiastolicBPs[patientId][1] = 0;
-
-            }
-        } else {
-            previousDiastolicBPs[patientId][1] = 0;
-
-        }
-
-    }
-
-    private void generateTresholdAlert(int patientId, OutputStrategy outputStrategy) {
-        int systolicBP = bloodPressureGenerator.getLastSystolicValue(patientId);
-        int diastolicBP = bloodPressureGenerator.getLastDiastolicValue(patientId);
-        if (systolicBP > 180 || systolicBP < 90 || diastolicBP > 120 || diastolicBP < 60) {
-            alertStates[patientId] = true;
-            outputStrategy.output(patientId, System.currentTimeMillis(), "Critical Threshold Alert", "triggered");
-
-        }
-
-        previousSystolicBPs[patientId][0] = systolicBP;
-        previousDiastolicBPs[patientId][0] = diastolicBP;
-    }
-
-    private void generateLowSaturationAlert(int patientId, OutputStrategy outputStrategy) {
-
-        int saturation = bloodSaturationGenerator.getLastSaturationValue(patientId);
-
-        if (saturation < 92) {
-            if (!alertStates[patientId]) {
-                alertStates[patientId] = true;
-                outputStrategy.output(patientId, System.currentTimeMillis(), "Low Saturation Alert", "triggered");
-            }
-        } else {
-            if (alertStates[patientId]) {
-                alertStates[patientId] = false;
-                outputStrategy.output(patientId, System.currentTimeMillis(), "Low Saturation Alert", "resolved");
-            }
-        }
-    }
-
-    private void generateRapidDropAlert(int patientId, OutputStrategy outputStrategy) {
-
-        long currentTime = System.currentTimeMillis();
-        int saturation = bloodSaturationGenerator.getLastSaturationValue(patientId);
-        // Rapid Drop Alert
-        if (previousSaturation[patientId] - saturation >= 5
-                && System.currentTimeMillis() - previousSaturationTime[patientId] <= 10 * 60 * 1000) {
-            outputStrategy.output(patientId, System.currentTimeMillis(), "Rapid Drop Alert", "triggered");
-        }
-
-        // Update previous saturation value
-        previousSaturation[patientId] = saturation;
-        previousSaturationTime[patientId] = currentTime;
-
-    }
-
-    private void generateHypotensiveHypoxemiaAlert(int patientId, OutputStrategy outputStrategy) {
-        int saturation = bloodSaturationGenerator.getLastSaturationValue(patientId);
-        int systolicBP = bloodPressureGenerator.getLastSystolicValue(patientId);
-
-        if (systolicBP < 90 && saturation < 92) {
-            outputStrategy.output(patientId, System.currentTimeMillis(), "Hypotensive Hypoxemia Alert", "triggered");
-        }
-
-    }
-
-    private void AbnormalHeartRateAlert(int patientId, OutputStrategy outputStrategy) {
-        double ecgValue = ecgDataGenerator.getLastEcgValue(patientId);
-
-        // Abnormal Heart Rate Alert: Trigger an alert for heart rate below 50 bpm or above 100 bpm under resting conditions.
-        if (ecgValue < 50 || ecgValue > 100) {
-            // Output the alert
-            outputStrategy.output(patientId, System.currentTimeMillis(), "Abnormal Heart Rate Alert", "triggered");
-        }
-
-    }
-
-    private void irregularBeatAlert(int patientId, OutputStrategy outputStrategy) {
-        double ecgValue = ecgDataGenerator.getLastEcgValue(patientId);
-        // Irregular Beat Alert: Trigger an alert if abnormal beats are detected, such as significant variations in time intervals between consecutive beats
-        // For simplicity, let's assume an irregular beat if the ECG value deviates significantly from the previous value
-        double previousEcgValue = ecgDataGenerator.getLastEcgValue(patientId);
-        double ecgVariation = Math.abs(ecgValue - previousEcgValue);
-        if (ecgVariation > 0.1) { // You may need to adjust this threshold based on your data
-            // Output the alert
-            outputStrategy.output(patientId, System.currentTimeMillis(), "Irregular Beat Alert", "triggered");
-        }
-    }
-
-*/
 
 }
