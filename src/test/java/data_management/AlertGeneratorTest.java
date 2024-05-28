@@ -279,10 +279,10 @@ public class AlertGeneratorTest {
         // Mocking dataStorage to return the relevant records
         List<PatientRecord> records = List.of(
             new PatientRecord(1, 60, "ECG", currentTime - 500000),  
-            new PatientRecord(1, 62, "ECG", currentTime - 400000), 
-            new PatientRecord(1, 61, "ECG", currentTime - 300000),  
-            new PatientRecord(1, 63, "ECG", currentTime - 200000),  
-            new PatientRecord(1, 65, "ECG", currentTime - 100000),  
+            new PatientRecord(1, 60, "ECG", currentTime - 400000), 
+            new PatientRecord(1, 60, "ECG", currentTime - 300000),  
+            new PatientRecord(1, 60, "ECG", currentTime - 200000),  
+            new PatientRecord(1, 60, "ECG", currentTime - 100000),  
             new PatientRecord(1, 100, "ECG", currentTime)           
         );
 

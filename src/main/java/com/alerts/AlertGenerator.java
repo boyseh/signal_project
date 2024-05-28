@@ -263,29 +263,33 @@ public class AlertGenerator {
 
     }
 
-  private void checkIrregularHeartRate(List<PatientRecord> records,Patient patient) {
+ private void checkIrregularHeartRate(List<PatientRecord> records, Patient patient) {
     int windowSize = 5;
     double thresholdMultiplier = 1.5;
-
+    
     if (records.size() >= windowSize) {
-        for (int i = windowSize - 1; i < records.size(); i++) {
-            double sum = 0.0;
-            for (int j = i - windowSize + 1; j <= i; j++) {
-                sum += records.get(j).getMeasurementValue();
+        for (int i = 0; i <= records.size() - windowSize; i++) {
+            double windowSum = 0;
+            for (int j = i; j < i + windowSize ; j++) {
+                windowSum += records.get(j).getMeasurementValue();
             }
-            double average = sum / windowSize;
-            double currentValue = records.get(i).getMeasurementValue();
 
-          
-            // Check for irregular heart rate using the sliding window
-            if (currentValue > average * thresholdMultiplier) {
-                triggerAlert(new Alert(Integer.toString(patient.getPatientID()), "Irregular Heart Rate Alert", records.get(i).getTimestamp()));
+            double windowAvg = windowSum / windowSize;
+            double threshold = windowAvg * thresholdMultiplier;
             
+            if (i + windowSize < records.size()) {
+                double nextPoint = records.get(i + windowSize).getMeasurementValue();
+                if (nextPoint > threshold) {
+                    Alert alert = new Alert(String.valueOf(patient.getPatientID()), "Irregular Heart Rate Alert", records.get(i).getTimestamp());
+                    triggerAlert(alert);
+                }
             }
-            
         }
     }
-  }
+}
+
+  
+
     private void criticalHeartRateAlert(List<PatientRecord> records, Patient patient) {
         for (PatientRecord record : records) {
             if (record.getMeasurementValue() < 50 || record.getMeasurementValue() > 100) {
