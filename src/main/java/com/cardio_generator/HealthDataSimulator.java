@@ -1,10 +1,17 @@
 package com.cardio_generator;
 
+import com.alerts.Alert;
+import com.cardio_generator.generators.AlertGenerator;
+
+
+
+
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.cardio_generator.generators.AlertGenerator;
+
 
 import com.cardio_generator.generators.BloodPressureDataGenerator;
 import com.cardio_generator.generators.BloodSaturationDataGenerator;
@@ -15,6 +22,7 @@ import com.cardio_generator.outputs.FileOutputStrategy;
 import com.cardio_generator.outputs.OutputStrategy;
 import com.cardio_generator.outputs.TcpOutputStrategy;
 import com.cardio_generator.outputs.WebSocketOutputStrategy;
+import com.data_management.Patient;
 
 import java.util.Collections;
 import java.util.List;
@@ -185,8 +193,15 @@ public class HealthDataSimulator {
     }
     
     
-       public void generateTriggeredAlert(int patientId, OutputStrategy outputStrategy) {
-        // Emit the triggered alert
-        outputStrategy.output(patientId, System.currentTimeMillis(), "Triggered Alert", "triggered");
-    }
+   
+    
+    
+       public void generateTriggeredAlert(Patient patient, boolean alertButton) {
+           if(alertButton){
+               Alert alert = new Alert(String.valueOf(patient.getPatientID()),"Triggered Alert" , System.currentTimeMillis());
+               System.out.println("Patient ID: " + alert.getPatientId()
+                + ", Condition: " + alert.getCondition()
+                + ", Timestamp: " + alert.getTimestamp());
+           }
+       }
 }
