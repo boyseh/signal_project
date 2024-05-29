@@ -3,6 +3,7 @@ package com.data_management;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a patient and manages their medical records. This class stores
@@ -55,14 +56,9 @@ public class Patient {
      * time range
      */
  public List<PatientRecord> getRecords(long startTime, long endTime) {
-    List<PatientRecord> filteredRecords = new ArrayList<>();
-    for (PatientRecord record : patientRecords) {
-        if (record.getTimestamp() >= startTime && record.getTimestamp() <= endTime) {
-            filteredRecords.add(record);
-        }
-    }
-    filteredRecords.sort(Comparator.comparingLong(PatientRecord::getTimestamp));
-    return filteredRecords;
+       return patientRecords.stream()
+                .filter(record -> record.getTimestamp() >= startTime && record.getTimestamp() <= endTime)
+                .collect(Collectors.toList());
 }
   
     

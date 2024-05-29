@@ -5,6 +5,7 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 
+    
 public class WebSocketOutputStrategy implements OutputStrategy {
 
     private WebSocketServer server;
