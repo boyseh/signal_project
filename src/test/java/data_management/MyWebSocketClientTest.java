@@ -11,39 +11,59 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-    class MyWebSocketClientTest {
+class MyWebSocketClientTest {
 
-    private DataStorage dataStorage;
     private MyWebSocketClient webSocketClient;
-    
-    private ByteArrayOutputStream outContent;
+    private DataStorage dataStorage;
     private PrintStream originalOut;
+    private ByteArrayOutputStream outContent;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() throws URISyntaxException, InterruptedException {
         dataStorage = mock(DataStorage.class);
-        webSocketClient = new MyWebSocketClient(new URI("ws://localhost:8080"), dataStorage);
-         
-        // Set up the output stream to capture System.out prints
         originalOut = System.out;
         outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
+        CountDownLatch latch = new CountDownLatch(1);
+        new Thread(() -> {
+            try {
+                webSocketClient = new MyWebSocketClient(new URI("ws://localhost:8080"), dataStorage);
+                webSocketClient.connect();
+                latch.countDown();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+        assertTrue(latch.await(10, TimeUnit.SECONDS));
+    }
+
+    @AfterEach
+    void restoreStreams() {
+        // Restore the original System.out stream
+        System.setOut(originalOut);
     }
 
     @Test
     void testOnOpen() {
-        
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+
         ServerHandshake handshake = mock(ServerHandshake.class);
         webSocketClient.onOpen(handshake);
-        // Ensure no exceptions are thrown and a proper message is logged
+
         System.setOut(originalOut);
-        //Check if output is as expected
-        assertTrue(outContent.toString().contains("Connected to server"));
-        
+
+        assertTrue(outContent.toString().contains("Connected to WebSocket server."));
     }
 
     @Test
@@ -59,35 +79,59 @@ import static org.mockito.Mockito.*;
         String message = "Invalid data format";
         webSocketClient.onMessage(message);
 
-        // Ensure no data is added for invalid messages
         verify(dataStorage, times(0)).addPatientData(anyInt(), anyDouble(), anyString(), anyLong());
     }
 
     @Test
     void testOnClose() {
+       
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(outContent));
+        // Call the onClose method with normal closure
         webSocketClient.onClose(1000, "Normal closure", true);
-        // Ensure no exceptions are thrown and a proper message is logged
+        assertFalse(webSocketClient.isOpen());
 
-        webSocketClient.onClose(1001, "Unexpected closure", true);
-        // Simulate reconnection logic and ensure no exceptions are thrown
-    }
-
-    @Test
-    void testOnError() {
-        
-        // Set up the output stream to capture System.err prints
-        PrintStream originalErr = System.err;
-        ByteArrayOutputStream outErr = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(outErr));
-        
       
-        Exception exception = new Exception("Test exception");
-        webSocketClient.onError(exception);
-        
-        
-   
-        System.setErr(originalErr);
-        //Check if output is as expected
-        assertTrue(outContent.toString().contains("WebSocket error"));
+        System.setOut(originalOut);
+
+        assertTrue(outContent.toString().contains("WebSocket connection closed: Normal closure (Code: 1000)"), "Expected closure message not found in the output");
+
     }
+
+   @Test
+void testOnError() throws InterruptedException {
+    // Set up streams to capture System.err
+    ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+    PrintStream originalErr = System.err;
+    System.setErr(new PrintStream(errContent));
+
+    // Use a CountDownLatch to wait for the reconnect attempt
+    CountDownLatch latch = new CountDownLatch(1);
+
+    // Wrap the webSocketClient to spy on the reconnect method
+    MyWebSocketClient spyClient = spy(webSocketClient);
+
+    // Simulate the reconnection attempt
+    doAnswer(invocation -> {
+        latch.countDown(); // Signal the latch when reconnect is called
+        return null;
+    }).when(spyClient).reconnectBlocking();
+
+    // Call the onError method with an exception
+    Exception ex = new Exception("Test exception");
+    spyClient.onError(ex);
+
+    // Wait for the reconnect attempt
+    assertTrue(latch.await(5, TimeUnit.SECONDS), "Reconnection attempt was not made");
+
+    // Restore the original System.err
+    System.setErr(originalErr);
+
+    // Verify the expected error messages
+    String errOutput = errContent.toString();
+    assertTrue(errOutput.contains("WebSocket error: Test exception"), "Expected error message 'Test exception' not found in System.err");
+    assertTrue(errOutput.contains("Connection refused: connect"), "Expected error message 'Connection refused: connect' not found in System.err");
+}
+
 }

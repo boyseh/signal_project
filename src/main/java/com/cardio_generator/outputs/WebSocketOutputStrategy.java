@@ -10,11 +10,12 @@ public class WebSocketOutputStrategy implements OutputStrategy {
 
     private WebSocketServer server;
 
-    public WebSocketOutputStrategy(int port) {
-        server = new SimpleWebSocketServer(new InetSocketAddress(port));
-        System.out.println("WebSocket server created on port: " + port + ", listening for connections...");
-        server.start();
-    }
+  public WebSocketOutputStrategy(int port) {
+   
+    server = new SimpleWebSocketServer(new InetSocketAddress(port));
+    System.out.println("WebSocket server created on port: " + port + ", listening for connections...");
+    server.start();
+}
 
     @Override
     public void output(int patientId, long timestamp, String label, String data) {

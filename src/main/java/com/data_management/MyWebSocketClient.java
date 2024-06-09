@@ -10,11 +10,11 @@ import org.java_websocket.handshake.ServerHandshake;
  */
 public class MyWebSocketClient extends WebSocketClient implements DataReader {
 
-    private DataStorage ds;
+    private DataStorage dataStorage;
 
     public MyWebSocketClient(URI serverUri, DataStorage ds) {
         super(serverUri);
-        this.ds = ds;
+        this.dataStorage = ds;
     }
 
     /**
@@ -25,7 +25,7 @@ public class MyWebSocketClient extends WebSocketClient implements DataReader {
      */
     @Override
     public void readData(DataStorage dataStorage) throws IOException {
-        this.ds = dataStorage;
+        this.dataStorage = dataStorage;
         this.connect();
     }
 
@@ -49,7 +49,7 @@ public class MyWebSocketClient extends WebSocketClient implements DataReader {
                     measurementValueString = measurementValueString.substring(0, measurementValueString.length() - 1);
                 }
                 double measurementValue = Double.parseDouble(measurementValueString);
-                ds.addPatientData(patientID, measurementValue, recordType, timestamp);
+                dataStorage.addPatientData(patientID, measurementValue, recordType, timestamp);
             } else {
                 System.err.println("Invalid format: " + message);
             }

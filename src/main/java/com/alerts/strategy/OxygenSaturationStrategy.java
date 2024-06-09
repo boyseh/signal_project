@@ -9,15 +9,23 @@ import com.data_management.PatientRecord;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OxygenSaturationStrategy extends AlertGenerator implements AlertStrategy  {
+public class OxygenSaturationStrategy extends AlertGenerator implements AlertStrategy {
 
-   private DataStorage dataStorage;
-   private static final long HOUR_INTERVAL_MS = 3600000;
-   public OxygenSaturationStrategy(DataStorage dataStorage) {
-       super(dataStorage);
-       this.dataStorage = dataStorage;
-   }
+    private DataStorage dataStorage;
+    private static final long HOUR_INTERVAL_MS = 3600000;
 
+    public OxygenSaturationStrategy(DataStorage dataStorage) {
+        super(dataStorage);
+        this.dataStorage = dataStorage;
+    }
+
+    /**
+     * Evaluates the patients blood saturation records and determines if any
+     * alerts need to be triggered. Checks if there is a lower than usual blood
+     * saturation and if there was a rapid drop during a given interval.
+     *
+     * @param patient to be evaluated
+     */
     @Override
     public void checkAlert(Patient patient) {
 
@@ -57,5 +65,5 @@ public class OxygenSaturationStrategy extends AlertGenerator implements AlertStr
         }
 
     }
-   
+
 }

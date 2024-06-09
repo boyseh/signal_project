@@ -46,10 +46,37 @@ public class HealthDataSimulator {
     private static ScheduledExecutorService scheduler;
     private static OutputStrategy outputStrategy = new ConsoleOutputStrategy(); // Default output strategy
     private static final Random random = new Random();
+        private static HealthDataSimulator instance;
 
-    public static void main(String[] args) throws IOException {
+    /**
+     * Private constructor to prevent instantiation from other classes.
+     * Initializes the simulator.
+     */
+    private HealthDataSimulator() {
+        
+    }
 
-        parseArguments(args);
+     /**
+     * Provides the global point of access to the singleton instance of
+     * {@code HealthDataSimulator}.
+     *
+     * @return the singleton instance of {@code HealthDataSimulator}
+     */
+    public static synchronized HealthDataSimulator getInstance() {
+        if (instance == null) {
+            instance = new HealthDataSimulator();
+        }
+        return instance;
+    }
+     /**
+     * Simulates health data based on the provided arguments. This method initializes the
+     * necessary components and schedules tasks for simulating data.
+     *
+     * @param args the command line arguments
+     * @throws IOException if an I/O error occurs
+     */
+    public void simulateData(String[] args) throws IOException{
+         parseArguments(args);
 
         scheduler = Executors.newScheduledThreadPool(patientCount * 4);
 
@@ -58,7 +85,8 @@ public class HealthDataSimulator {
 
         scheduleTasksForPatients(patientIds);
     }
-
+    
+    
     /**
      * Parses command-line arguments and adjusts the simulation parameters accordingly.
      *
