@@ -299,7 +299,7 @@ public class AlertGenerator {
         }
     }
 
-    private List<PatientRecord> getRecordsByType(List<PatientRecord> records, String type) {
+    public List<PatientRecord> getRecordsByType(List<PatientRecord> records, String type) {
         List<PatientRecord> filteredRecords = new ArrayList<PatientRecord>();
         for (PatientRecord record : records) {
             if (record.getRecordType().equals(type)) {

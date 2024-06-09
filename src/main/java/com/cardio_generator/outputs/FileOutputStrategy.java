@@ -16,9 +16,7 @@ public class FileOutputStrategy implements OutputStrategy {
     
 //variable names should be in lowerCamelCase (starting letter in lowercase)
     private String baseDirectory;
-
-    //changed file_map to FILE_MAP because its a final
-    public final ConcurrentHashMap<String, String> FILE_MAP = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, String> fileMap = new ConcurrentHashMap<>();
     
     /**
      * 
@@ -41,7 +39,7 @@ public class FileOutputStrategy implements OutputStrategy {
         }
         // Set the FilePath variable
         //variable names lowerCamelCase
-        String filePath = FILE_MAP.computeIfAbsent(label, k -> Paths.get(baseDirectory, label + ".txt").toString());
+        String filePath = fileMap.computeIfAbsent(label, k -> Paths.get(baseDirectory, label + ".txt").toString());
 
         // Write the data to the file
         try (PrintWriter out = new PrintWriter(

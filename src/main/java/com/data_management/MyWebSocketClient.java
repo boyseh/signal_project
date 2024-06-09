@@ -103,5 +103,12 @@ public class MyWebSocketClient extends WebSocketClient implements DataReader {
     public void onError(Exception ex) {
         System.err.println("WebSocket error: " + ex.getMessage());
         ex.printStackTrace();
+      
+            try {
+                this.reconnectBlocking();
+            } catch (InterruptedException e) {
+                System.err.println("Reconnection attempt failed.");
+                e.printStackTrace();
+            }
     }
 }
