@@ -67,11 +67,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Project Members
 
 - Student ID : i6345075
-<<<<<<< HEAD
+
 
 ## UML 
 
-In the uml_models you can find diagrams for the generator and the CHMS program. I will provide links to their respective directories.
+You can find the UML diagrams for both the Cardio Generator and the CHMS program in their respective directories. Please refer to the following links for more details:
 
 cardio generator: https://github.com/boyseh/signal_project/tree/master/uml_models/cardio_generator
 CHMS : https://github.com/boyseh/signal_project/tree/master/uml_models/chms
